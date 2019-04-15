@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "chrome-aws-lambda": "^1.14.0",
+    "micro": "^9.3.3",
+    "micro-cors": "^0.1.1",
+    "puppeteer-core": "^1.14.0",
+    "react-dom": "^16.8.6",
+    "react-kawaii": "^0.11.0"
+  },
+  "devDependencies": {
+    "micro-dev": "^3.0.0"
+  },
+  "scripts": {
+    "dev": "micro-dev -p 3001 index.js"
+  }
+}
