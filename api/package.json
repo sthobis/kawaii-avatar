@@ -4,13 +4,16 @@
     "micro": "^9.3.3",
     "micro-cors": "^0.1.1",
     "puppeteer-core": "^1.14.0",
+    "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-kawaii": "^0.11.0"
   },
   "devDependencies": {
-    "micro-dev": "^3.0.0"
+    "cross-env": "^5.2.0",
+    "micro-dev": "^3.0.0",
+    "puppeteer": "^1.14.0"
   },
   "scripts": {
-    "dev": "micro-dev -p 3001 index.js"
+    "dev": "cross-env NOW_REGION=dev1 micro-dev -p 3001 index.js"
   }
 }
