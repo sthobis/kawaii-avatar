@@ -10,7 +10,7 @@ const isHtmlDebug = process.env.HTML_DEBUG === "1"
 module.exports = cors(async (req, res) => {
   try {
     const options = parseQuery(req)
-    
+
     const html = getHtml(options)
     if (isHtmlDebug) {
       res.statusCode = 200

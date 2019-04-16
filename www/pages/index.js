@@ -1,179 +1,320 @@
-import Time from '../components/time'
-import 'isomorphic-unfetch'
+import React, { useState, useEffect, useRef } from "react"
+import defaultOptions from "../../options.json"
 
-const langs = [
-  { name: 'Node.js', path: 'node', ext: '.js' }
-]
+const useInput = (id, initialValue, validate) => {
+  const [value, setValue] = useState(initialValue)
 
-const Page = ({nows}) => <div className="container">
-    <div className="logo">
-      <svg width={40} height={36}>
-        <path
-          d="M20 .1L.1 35.8h39.7L20 0zm-1.7 7.2l14.5 26.4H3.6L18.3 7.3z"
-          fill="#fff"
-          fillRule="nonzero"
-        />
-      </svg>
-    </div>
-    <div className="clocks">
-      {nows.map(({name, path, ext, now}) => 
-        <a href={`https://zeit.co/now-examples/monorepo/4csp3st7w/source?f=src/${path}/index${ext}`} target="_blank" title={name} key={path}>
-          <Time 
-            name={name}
-            path={path}
-            now={now}
-          />
-        </a>
-      )}
-    </div>
-    <div className="intro">
-      <hr/>
-      <h2>What is this?</h2>
-      <p>We built this deployment to showcase the power and flexibility of <a href="https://zeit.co/blog/now-2" target="_blank">Now 2.0</a>. It's organized as a monorepo that combines multiple technologies.</p>
-      <p>The entrypoint to this deployment is a Next.js application, compiled to serverless functions that server-render on-demand.</p>
-      <p>Thanks to our <a href="https://zeit.co/docs/v2/deployments/builders/overview" title="builders" target="_blank">builders</a>, you are not limited to just static or dynamic, Go or Node.js. The possibilities are endless.</p>
-    </div>
-    <style jsx global>{`
-      * {
-        box-sizing: border-box;
+  const onChange = e => {
+    setValue(e.target.value)
+  }
+
+  const timeoutRef = useRef(null)
+  useEffect(() => {
+    if (validate) {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current)
       }
-      html, body {
-        height: 100%;
+      timeoutRef.current = window.setTimeout(() => {
+        validate(value)
+      }, 500)
+    }
+  }, [value])
+
+  return { id, value, onChange }
+}
+
+const Page = ({ origin }) => {
+  const [validationMessage, setValidationMessage] = useState({})
+
+  const username = useInput("username", "")
+  const size = useInput("size", "", value => {
+    let errors = []
+    const number = parseInt(value)
+
+    if (value && isNaN(number)) {
+      errors.push("Size must be a number")
+    }
+    if (number < 10 || number > 1000) {
+      errors.push("Size must be between 10 and 1000")
+    }
+    if (errors.length) {
+      setValidationMessage(prev => ({ ...prev, size: errors }))
+    } else {
+      setValidationMessage(prev => ({ ...prev, size: null }))
+    }
+  })
+  const type = useInput("type", "", value => {
+    let wrongValues = []
+    value.split(",").forEach(item => {
+      if (item && !defaultOptions.type.find(str => str === item)) {
+        wrongValues.push(item)
       }
-      body {
-        margin: 0;
-        color: white;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-        text-rendering: optimizeLegibility;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing:grayscale;
-        background: radial-gradient(circle, #333, #333 1px, #000 1px, #000);
-        background-size: 28px 28px;
-        background-position: center;
-        font-size: 18px;
-        line-height: 1.6;
-        font-weight: 400;
+    })
+    if (wrongValues.length) {
+      let errors = []
+      errors.push(`Type must be one of the following: ${defaultOptions.type.join(", ")}`)
+      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
+      setValidationMessage(prev => ({ ...prev, type: errors }))
+    } else {
+      setValidationMessage(prev => ({ ...prev, type: null }))
+    }
+  })
+  const mood = useInput("mood", "", value => {
+    let wrongValues = []
+    value.split(",").forEach(item => {
+      if (item && !defaultOptions.mood.find(str => str === item)) {
+        wrongValues.push(item)
       }
-      a {
-        text-decoration: none;
-        color: white;
+    })
+    if (wrongValues.length) {
+      let errors = []
+      errors.push(`Mood must be one of the following: ${defaultOptions.mood.join(", ")}`)
+      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
+      setValidationMessage(prev => ({ ...prev, mood: errors }))
+    } else {
+      setValidationMessage(prev => ({ ...prev, mood: null }))
+    }
+  })
+  const color = useInput("color", "", value => {
+    let wrongValues = []
+    value.split(",").forEach(item => {
+      if (item && item.startsWith("#")) {
+        wrongValues.push(item)
       }
-      strong {
-        color: white;
-        font-weight: 600;
-      }
-      code {
-        font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
-        font-size: 0.9em;
-      }
-      code::before,
-      code::after {
-        content: '\`';
-      }
-      ::selection{ background: #f81ce5; color: white; }
-      ::-moz-selection{ background: #f81ce5; color: white; }
-      .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        max-width: 100%;
-        width: 1080px;
-        min-height: 100vh;
-        margin: auto;
-        padding: 30px 20px;
-      }
-      .logo {
-        margin: 30px 0 20px;
-      }
-      .intro {
-        text-align: left;
-        max-width: 640px;
-      }
-      .intro a {
-        margin-right: .15em;
-        border-bottom: 1px solid;
-      }
-      h2 {
-        font-size: 30px;
-      }
-      hr {
-        display: none;
-        border: none;
-        border-bottom: 1px solid #666;
-        width: 100px;
-        margin: 30px 0;
-      }
-      .clocks {
-        display: flex;
-        flex-wrap: wrap;
-        flex: 1;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        margin: 0 -10px;
-        padding: 40px 0;
-        max-height: 500px;
-      }
-      .clocks a {
-        position: relative;
-        flex: 1 0 25%;
-        text-align: center;
-        padding: 10px;
-        margin: 20px 0;
-        font-size: 17px;
-        transition: all .1s ease;
-      }
-      .clocks a:hover {
-        box-shadow: 0 0 0 1px #666;
-      }
-      .clock span {
-        font-weight: 700;
-      }
-      .clock time {
-        display: block;
-        height: 3.2em;
-        font-weight: 700;
-        color: #fff;
-        animation: pulse 1s forwards;
-      }
-      @keyframes pulse {
-        from {
-          color: #fff;
+    })
+    if (wrongValues.length) {
+      let errors = []
+      errors.push("Use rgb format or color name e.g. 'pink'")
+      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
+      setValidationMessage(prev => ({ ...prev, color: errors }))
+    } else {
+      setValidationMessage(prev => ({ ...prev, color: null }))
+    }
+  })
+  const background = useInput("background", "", value => {
+    if (value && value.startsWith("#")) {
+      let errors = []
+      errors.push("Use rgb format or color name e.g. 'pink'")
+      setValidationMessage(prev => ({ ...prev, background: errors }))
+    } else {
+      setValidationMessage(prev => ({ ...prev, background: null }))
+    }
+  })
+
+  const getImageSource = () => {
+    const options = {
+      username,
+      size,
+      type,
+      mood,
+      color,
+      background
+    }
+    const searchParams = Object.keys(options).map(key =>
+      options[key].value ? `${key}=${options[key].value}` : ""
+    ).filter(i => i).join("&")
+    return `${origin}${searchParams ? "/?" + searchParams : ""}`
+  }
+
+  const [imageSrc, setImageSrc] = useState(getImageSource())
+  const timeoutRef = useRef(null)
+  useEffect(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current)
+    }
+    timeoutRef.current = window.setTimeout(() => {
+      setImageSrc(getImageSource())
+    }, 500)
+  }, [username, size, type, mood, color, background])
+
+  return (
+    <div>
+      <header>
+        <h1>Kawaii Avatar</h1>
+      </header>
+      <section className="container">
+        <div className="controls">
+          {[username, size, type, mood, color, background].map(item => (
+            <div key={item.id} className="field">
+              <label htmlFor={item.id}>{item.id}</label>
+              <input {...item} />
+              {validationMessage[item.id] && (
+                validationMessage[item.id].map((error, i) => (
+                  <p key={i} className="validation-error">{error}</p>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="avatar">
+          <img src={imageSrc} alt={`kawaii avatar for ${username.value}`} />
+          <h2>Image Link</h2>
+          <code>{getImageSource()}</code>
+        </div>
+      </section>
+      <section className="description">
+        <h2>What is this?</h2>
+        <p>Kawaii-avatar is a deterministic user avatar generator for your projects.</p>
+        <h2>Why?</h2>
+        <p>Because most default avatar on the web is boring, and not k-kawaii..</p>
+        <h2>How to use it?</h2>
+        <p>You can inline it on your avatar image source</p>
+        <code>&lt;img src="https://kawaii-avatar.now.sh/?username=sthobis" alt="sthobis's avatar" /&gt;</code>
+      </section>
+      <footer>
+        <p>Made by <a href="https://github.com/sthobis">sthobis</a></p>
+        <p>Source available on <a href="https://github.com/sthobis/kawaii-avatar">github</a></p>
+      </footer>
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
         }
-        to {
-          color: #bbb;
+
+        html, body {
+          height: 100%;
         }
-      }
-      @media screen and (max-width: 960px) {
-        .clocks a {
-          flex: 1 0 50%;
-          font-size: 20px;
+
+        body {
+          margin: 0;
+          color: white;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing:grayscale;
+          background-color: #363dc2;
+          font-size: 16px;
+          line-height: 1.6;
+          font-weight: 400;
         }
-      }
-      @media screen and (max-width: 480px) {
-        .clocks a {
-          flex: 1 0 100%;
+
+        a {
+          color: white;
         }
-        .clocks {
-          max-height: unset;
+
+        strong {
+          color: white;
+          font-weight: 600;
         }
-        hr {
+
+        code {
+          font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+          font-size: 0.9em;
+          background: rgba(0, 0, 0, 0.2);
+          padding: 10px;
+          border-radius: 4px;
+        }
+
+        ::selection {
+          background: #a031a7;
+          color: white;
+        }
+
+        ::-moz-selection {
+          background: #a031a7;
+          color: white;
+        }
+
+        h1 {
+          text-align: center;
+          margin: 40px 0 10px 0;
+        }
+
+        section {
+          padding: 40px;
+          text-align: center;
+        }
+
+        .container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: left;
+          padding-bottom: 0;
+        }
+
+        .controls {
+          width: 240px;
+          margin: 0 40px 0 0;
+        }
+
+        .field {
+          margin: 0 0 10px 0;
+        }
+
+        label {
           display: block;
+          font-weight: 500;
+          text-transform: capitalize;
+          margin: 0 0 5px 0;
         }
-      }
-    `}</style>
-  </div>
 
-Page.getInitialProps = async ({req}) => {
-  const protocol = process.env.NOW_REGION === 'dev1' ? 'http' : 'https';
-  const baseUrl = `${protocol}://${req.headers.host}/api`
-  const nows = await Promise.all(langs.map(async ({name, path, ext}) => {
-    const now = await (await fetch(`${baseUrl}/${path}`)).text()
-    return {name, path, now, ext}
-  }))
+        input {
+          width: 100%;
+          border: none;
+          border-radius: 4px;
+          padding: 8px 10px;
+          margin: 0 0 10px 0;
+        }
 
-  return { nows }
+        input:focus {
+          outline-color: #a031a7;
+        }
+
+        .validation-error {
+          font-size: 13px;
+          margin: 0 0 2px 0;
+        }
+
+        .avatar {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 300px;
+          height: 300px;
+        }
+
+        img {
+          width: auto;
+          max-width: 100%;
+          border-radius: 4px;
+        }
+
+        .avatar h2 {
+          margin: 20px 0 10px 0;
+        }
+
+        .avatar code {
+          word-break: break-all;
+        }
+
+        .description h2 {
+          margin: 20px 0 5px 0;
+        }
+
+        .description p {
+          margin: 0 0 10px 0;
+        }
+
+        footer {
+          padding: 40px;
+          text-align: center;
+        }
+
+        footer p {
+          margin: 0;
+        }
+      `}</style>
+    </div>
+  )
+}
+
+Page.getInitialProps = ({ req  }) => {
+  const isDev = process.env.NOW_REGION === "dev1"
+  const protocol = isDev ? "http" : "https"
+  const host = isDev ? "localhost:3001" : req.headers.host
+
+  return { origin: `${protocol}://${host}` }
 }
 
 export default Page
