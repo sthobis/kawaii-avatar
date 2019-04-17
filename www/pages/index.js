@@ -169,10 +169,10 @@ const Page = ({ origin }) => {
         <meta name="title" content="Deterministic user avatar generator for your projects" />
         <meta name="title" content="With Kawaii Avatar you can create custom illustration for your users default avatar" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://react-kawaii.now.sh/" />
+        <meta property="og:url" content="https://kawaii-avatar.now.sh/" />
         <meta property="og:title" content="Deterministic user avatar generator for your projects" />
         <meta property="og:description" content="With Kawaii Avatar you can create custom illustration for your users default avatar" />
-        <meta property="og:image" content="https://react-kawaii.now.sh/?username=sthobis&type=CreditCard" />
+        <meta property="og:image" content="https://kawaii-avatar.now.sh/avatar?username=sthobis&type=CreditCard" />
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
       <header>
