@@ -1,4 +1,3 @@
-const { send, sendError } = require("micro")
 const cors = require("micro-cors")()
 const { getHtml } = require("./utils/template")
 const { getScreenshot } = require("./utils/chromium")

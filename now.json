@@ -3,21 +3,21 @@
   "alias": "kawaii-avatar",
   "version": 2,
   "builds": [
-      { "src": "/www/package.json", "use": "@now/static-build" },
+      { "src": "/www/package.json", "use": "@now/next" },
       { "src": "/api/*.js", "use": "@now/node", "config": { "maxLambdaSize": "40mb" } },
       { "src": "/static/*", "use": "@now/static" }
   ],
   "routes": [
       {
-        "src": "/", "dest": "/www"
-      },
-      {
-        "src": "/favicon.ico",
-        "dest": "/static/favicon.ico"
-      },
-      {
-        "src": "/(.*)",
+        "src": "/avatar",
         "dest": "/api/avatar.js"
+      },
+      {
+        "src": "/icon.png",
+        "dest": "/static/icon.png"
+      },
+      {
+        "src": "/(.*)", "dest": "/www/$1"
       }
   ]
 }

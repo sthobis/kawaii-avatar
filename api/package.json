@@ -14,6 +14,6 @@
     "puppeteer": "^1.14.0"
   },
   "scripts": {
-    "dev": "cross-env NOW_REGION=dev1 micro-dev -p 3001 index.js"
+    "dev": "cross-env NOW_REGION=dev1 micro-dev -p 3001 avatar.js"
   }
 }

@@ -1,107 +1,122 @@
 import React, { useState, useEffect, useRef } from "react"
+import Head from "next/head"
+import copy from "copy-text-to-clipboard"
 import defaultOptions from "../../options.json"
 
-const useInput = (id, initialValue, validate) => {
+const useInput = ({
+  id,
+  value: initialValue,
+  placeholder,
+  validator,
+  tag = "input"
+}) => {
   const [value, setValue] = useState(initialValue)
 
   const onChange = e => {
     setValue(e.target.value)
   }
 
-  const timeoutRef = useRef(null)
+  const imageTimeoutRef = useRef(null)
   useEffect(() => {
-    if (validate) {
-      if (timeoutRef.current) {
-        window.clearTimeout(timeoutRef.current)
+    if (validator) {
+      if (imageTimeoutRef.current) {
+        window.clearTimeout(imageTimeoutRef.current)
       }
-      timeoutRef.current = window.setTimeout(() => {
-        validate(value)
+      imageTimeoutRef.current = window.setTimeout(() => {
+        validator(value)
       }, 500)
     }
   }, [value])
 
-  return { id, value, onChange }
+  return { id, value, onChange, placeholder, tag }
 }
 
 const Page = ({ origin }) => {
   const [validationMessage, setValidationMessage] = useState({})
 
-  const username = useInput("username", "")
-  const size = useInput("size", "", value => {
-    let errors = []
-    const number = parseInt(value)
+  const username = useInput({
+    id: "username",
+    value: "",
+    placeholder: defaultOptions.username
+  })
+  const size = useInput({
+    id: "size",
+    value: "",
+    placeholder: defaultOptions.size,
+    validator: value => {
+      let errors = []
+      const number = parseInt(value)
 
-    if (value && isNaN(number)) {
-      errors.push("Size must be a number")
-    }
-    if (number < 10 || number > 1000) {
-      errors.push("Size must be between 10 and 1000")
-    }
-    if (errors.length) {
-      setValidationMessage(prev => ({ ...prev, size: errors }))
-    } else {
-      setValidationMessage(prev => ({ ...prev, size: null }))
-    }
-  })
-  const type = useInput("type", "", value => {
-    let wrongValues = []
-    value.split(",").forEach(item => {
-      if (item && !defaultOptions.type.find(str => str === item)) {
-        wrongValues.push(item)
+      if (value && isNaN(number)) {
+        errors.push("Size must be a number")
       }
-    })
-    if (wrongValues.length) {
-      let errors = []
-      errors.push(`Type must be one of the following: ${defaultOptions.type.join(", ")}`)
-      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
-      setValidationMessage(prev => ({ ...prev, type: errors }))
-    } else {
-      setValidationMessage(prev => ({ ...prev, type: null }))
-    }
-  })
-  const mood = useInput("mood", "", value => {
-    let wrongValues = []
-    value.split(",").forEach(item => {
-      if (item && !defaultOptions.mood.find(str => str === item)) {
-        wrongValues.push(item)
+      if (number < 10 || number > 1000) {
+        errors.push("Size must be between 10 and 1000")
       }
-    })
-    if (wrongValues.length) {
-      let errors = []
-      errors.push(`Mood must be one of the following: ${defaultOptions.mood.join(", ")}`)
-      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
-      setValidationMessage(prev => ({ ...prev, mood: errors }))
-    } else {
-      setValidationMessage(prev => ({ ...prev, mood: null }))
-    }
-  })
-  const color = useInput("color", "", value => {
-    let wrongValues = []
-    value.split(",").forEach(item => {
-      if (item && item.startsWith("#")) {
-        wrongValues.push(item)
+      if (errors.length) {
+        setValidationMessage(prev => ({ ...prev, size: errors }))
+      } else {
+        setValidationMessage(prev => ({ ...prev, size: null }))
       }
-    })
-    if (wrongValues.length) {
-      let errors = []
-      errors.push("Use rgb format or color name e.g. 'pink'")
-      errors.push(`Replace the following: ${wrongValues.join(", ")}`)
-      setValidationMessage(prev => ({ ...prev, color: errors }))
-    } else {
-      setValidationMessage(prev => ({ ...prev, color: null }))
     }
   })
-  const background = useInput("background", "", value => {
-    if (value && value.startsWith("#")) {
-      let errors = []
-      errors.push("Use rgb format or color name e.g. 'pink'")
-      setValidationMessage(prev => ({ ...prev, background: errors }))
-    } else {
-      setValidationMessage(prev => ({ ...prev, background: null }))
-    }
+  const type = useInput({
+    id: "type",
+    value: "",
+    placeholder: defaultOptions.type.join(", "),
+    validator: value => {
+      let wrongValues = []
+      value.replace(/ /g, "").split(",").forEach(item => {
+        if (item && !defaultOptions.type.find(str => str === item)) {
+          wrongValues.push(item)
+        }
+      })
+      if (wrongValues.length) {
+        let errors = []
+        errors.push(`Replace the following: ${wrongValues.join(", ")}`)
+        errors.push(`Type must be part of: ${defaultOptions.type.join(", ")} (case-sensitive)`)
+        setValidationMessage(prev => ({ ...prev, type: errors }))
+      } else {
+        setValidationMessage(prev => ({ ...prev, type: null }))
+      }
+    },
+    tag: "textarea"
+  })
+  const mood = useInput({
+    id: "mood",
+    value: "",
+    placeholder: defaultOptions.mood.join(", "),
+    validator: value => {
+      let wrongValues = []
+      value.replace(/ /g, "").split(",").forEach(item => {
+        if (item && !defaultOptions.mood.find(str => str === item)) {
+          wrongValues.push(item)
+        }
+      })
+      if (wrongValues.length) {
+        let errors = []
+        errors.push(`Replace the following: ${wrongValues.join(", ")}`)
+        errors.push(`Mood must be part of: ${defaultOptions.mood.join(", ")} (case-sensitive)`)
+        setValidationMessage(prev => ({ ...prev, mood: errors }))
+      } else {
+        setValidationMessage(prev => ({ ...prev, mood: null }))
+      }
+    },
+    tag: "textarea"
+  })
+  const color = useInput({
+    id: "color",
+    value: "",
+    placeholder: defaultOptions.color.join(", "),
+    tag: "textarea"
+  })
+  const background = useInput({
+    id: "background",
+    value: "",
+    placeholder: defaultOptions.background
   })
 
-  const getImageSource = () => {
+  const getImageSrc = () => {
     const options = {
       username,
       size,
@@ -110,59 +125,101 @@ const Page = ({ origin }) => {
       color,
       background
     }
-    const searchParams = Object.keys(options).map(key =>
-      options[key].value ? `${key}=${options[key].value}` : ""
-    ).filter(i => i).join("&")
-    return `${origin}${searchParams ? "/?" + searchParams : ""}`
+    const searchParams = Object.keys(options).filter(key => options[key].value)
+      .map(key => {
+        // remove whitespace and encode # (hash) character
+        let value = options[key].value.replace(/ /g, "")
+          .replace(/#/g, "%23")
+        return `${key}=${value}`
+      })
+      .join("&")
+    return `${origin}/avatar${searchParams ? "?" + searchParams : ""}`
   }
 
-  const [imageSrc, setImageSrc] = useState(getImageSource())
-  const timeoutRef = useRef(null)
+  const imageSrc = getImageSrc()
+  const [debouncedImageSrc, setDebouncedImageSrc] = useState(imageSrc)
+  const imageTimeoutRef = useRef(null)
   useEffect(() => {
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current)
+    if (imageTimeoutRef.current) {
+      window.clearTimeout(imageTimeoutRef.current)
     }
-    timeoutRef.current = window.setTimeout(() => {
-      setImageSrc(getImageSource())
+    imageTimeoutRef.current = window.setTimeout(() => {
+      setDebouncedImageSrc(imageSrc)
     }, 500)
   }, [username, size, type, mood, color, background])
 
+  const initialCopyText = "Click to copy"
+  const [copyText, setCopyText] = useState(initialCopyText)
+  const copyTimeoutRef = useRef(null)
+  const onCopy = e => {
+    copy(imageSrc)
+    setCopyText("copied!")
+    if (copyTimeoutRef.current) {
+      window.clearTimeout(copyTimeoutRef.current)
+    }
+    copyTimeoutRef.current = window.setTimeout(() => {
+      setCopyText(initialCopyText)
+    }, 1500)
+  }
+
   return (
     <div>
+      <Head>
+        <title>Kawaii Avatar</title>
+        <meta name="title" content="Deterministic user avatar generator for your projects" />
+        <meta name="title" content="With Kawaii Avatar you can create custom illustration for your users default avatar" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://react-kawaii.now.sh/" />
+        <meta property="og:title" content="Deterministic user avatar generator for your projects" />
+        <meta property="og:description" content="With Kawaii Avatar you can create custom illustration for your users default avatar" />
+        <meta property="og:image" content="https://react-kawaii.now.sh/?username=sthobis&type=CreditCard" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+      </Head>
       <header>
         <h1>Kawaii Avatar</h1>
+        <p>Kawaii (かわいい, pronounced [kaɰaiꜜi]; means "lovable", "cute", or "adorable")</p>
       </header>
       <section className="container">
         <div className="controls">
-          {[username, size, type, mood, color, background].map(item => (
-            <div key={item.id} className="field">
-              <label htmlFor={item.id}>{item.id}</label>
-              <input {...item} />
-              {validationMessage[item.id] && (
-                validationMessage[item.id].map((error, i) => (
-                  <p key={i} className="validation-error">{error}</p>
-                ))
-              )}
-            </div>
-          ))}
+          {[username, size, background, type, mood, color].map(item => {
+            const Tag = item.tag
+            return (
+              <div key={item.id} className="field">
+                <label htmlFor={item.id}>{item.id}</label>
+                <Tag {...item} />
+                {validationMessage[item.id] && (
+                  validationMessage[item.id].map((error, i) => (
+                    <p key={i} className="validation-error">{error}</p>
+                  ))
+                )}
+              </div>
+            )
+          })}
         </div>
         <div className="avatar">
-          <img src={imageSrc} alt={`kawaii avatar for ${username.value}`} />
+          <img src={debouncedImageSrc} alt={`kawaii avatar for ${username.value}`} />
           <h2>Image Link</h2>
-          <code>{getImageSource()}</code>
+          <code onClick={onCopy}>
+            {imageSrc}
+            <span className="copy">{copyText}</span>
+          </code>
         </div>
       </section>
       <section className="description">
         <h2>What is this?</h2>
-        <p>Kawaii-avatar is a deterministic user avatar generator for your projects.</p>
+        <p>
+          Kawaii Avatar is a deterministic user avatar generator for your projects.<br/>
+          The same url will always produce the same image which means you can provide consistent avatar for your users.<br/>
+          Illustrations are provided by <a href="https://react-kawaii.now.sh">react-kawaii</a>.
+        </p>
         <h2>Why?</h2>
-        <p>Because most default avatar on the web is boring, and not k-kawaii..</p>
+        <p>Because most default avatar on the web is not k-kawaii enough?</p>
         <h2>How to use it?</h2>
-        <p>You can inline it on your avatar image source</p>
-        <code>&lt;img src="https://kawaii-avatar.now.sh/?username=sthobis" alt="sthobis's avatar" /&gt;</code>
+        <p>You can inline Kawaii Avatar url on your user avatar image source</p>
+        <code>&lt;img src="https://kawaii-avatar.now.sh/avatar?username=sthobis" alt="sthobis's avatar" /&gt;</code>
       </section>
       <footer>
-        <p>Made by <a href="https://github.com/sthobis">sthobis</a></p>
+        <p>Made by <a href="https://sthobis.github.io">sthobis</a></p>
         <p>Source available on <a href="https://github.com/sthobis/kawaii-avatar">github</a></p>
       </footer>
       <style jsx global>{`
@@ -177,7 +234,6 @@ const Page = ({ origin }) => {
         body {
           margin: 0;
           color: white;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing:grayscale;
@@ -185,10 +241,27 @@ const Page = ({ origin }) => {
           font-size: 16px;
           line-height: 1.6;
           font-weight: 400;
+          --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+          --color-accent: #ff78c1;
+        }
+
+        body,
+        input,
+        textarea {
+          font-family: var(--font-primary);
         }
 
         a {
           color: white;
+          transition: .3s;
+        }
+
+        a:visited {
+          color: currentColor;
+        }
+
+        a:hover {
+          color: var(--color-accent);
         }
 
         strong {
@@ -197,6 +270,8 @@ const Page = ({ origin }) => {
         }
 
         code {
+          display: inline-block;
+          text-align: left;
           font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
           font-size: 0.9em;
           background: rgba(0, 0, 0, 0.2);
@@ -205,18 +280,31 @@ const Page = ({ origin }) => {
         }
 
         ::selection {
-          background: #a031a7;
+          background: var(--color-accent);
           color: white;
         }
 
         ::-moz-selection {
-          background: #a031a7;
+          background: var(--color-accent);
           color: white;
         }
 
-        h1 {
+        header {
+          padding: 0 40px;
           text-align: center;
-          margin: 40px 0 10px 0;
+        }
+
+        header p {
+          font-size: 14px;
+          margin: 0 0 10px 0;
+        }
+
+        h1 {
+          margin: 60px 0 0 0;
+        }
+
+        h1, h2 {
+          color: var(--color-accent);
         }
 
         section {
@@ -233,7 +321,7 @@ const Page = ({ origin }) => {
         }
 
         .controls {
-          width: 240px;
+          width: 300px;
           margin: 0 40px 0 0;
         }
 
@@ -248,16 +336,24 @@ const Page = ({ origin }) => {
           margin: 0 0 5px 0;
         }
 
-        input {
+        input,
+        textarea {
           width: 100%;
+          font-size: 16px;
           border: none;
           border-radius: 4px;
           padding: 8px 10px;
           margin: 0 0 10px 0;
         }
 
-        input:focus {
-          outline-color: #a031a7;
+        textarea {
+          height: 82px;
+          resize: none;
+        }
+
+        input:focus,
+        textarea:focus {
+          outline-color: var(--color-accent);
         }
 
         .validation-error {
@@ -271,21 +367,43 @@ const Page = ({ origin }) => {
           justify-content: center;
           align-items: center;
           width: 300px;
-          height: 300px;
         }
 
         img {
           width: auto;
-          max-width: 100%;
+          max-width: 300px;
           border-radius: 4px;
         }
 
         .avatar h2 {
+          color: white;
           margin: 20px 0 10px 0;
         }
 
         .avatar code {
+          position: relative;
           word-break: break-all;
+          cursor: pointer;
+          padding-bottom: 15px;
+        }
+
+        .avatar code:hover .copy {
+          opacity: 1;
+        }
+
+        .copy {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          color: #111;
+          font-size: 11px;
+          font-weight: 500;
+          padding: 0px 6px;
+          background-color: rgba(255, 255, 255, 0.7);
+          font-family: var(--font-primary);
+          border-radius: 4px;
+          opacity: 0;
+          transition: .3s;
         }
 
         .description h2 {
@@ -303,6 +421,26 @@ const Page = ({ origin }) => {
 
         footer p {
           margin: 0;
+        }
+
+        @media (max-width: 767px) {
+          .container {
+            flex-direction: column-reverse;
+          }
+
+          .controls {
+            width: 100%;
+            margin: 0;
+          }
+
+          .avatar {
+            width: 100%;
+            margin: 0 0 30px 0;
+          }
+
+          .avatar code .copy {
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
