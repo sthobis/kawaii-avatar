@@ -1,5 +1,5 @@
 const { parse } = require("url")
-const defaultOptions = require("../../options.json")
+const defaultOptions = require("../options.json")
 
 const restrictSize = size => {
   const number = parseInt(size)
