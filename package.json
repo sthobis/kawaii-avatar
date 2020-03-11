@@ -1,0 +1,28 @@
+{
+  "name": "kawaii-avatar",
+  "version": "0.1.0",
+  "private": true,
+  "author": {
+    "name": "Stefanus Thobi Sinaga",
+    "email": "s.thobi.sinaga@gmail.com"
+  },
+  "dependencies": {
+    "chrome-aws-lambda": "^2.1.1",
+    "copy-text-to-clipboard": "^2.1.0",
+    "micro": "^9.3.3",
+    "micro-cors": "^0.1.1",
+    "next": "^9.3.0",
+    "puppeteer-core": "^2.1.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-kawaii": "^0.11.0"
+  },
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "devDependencies": {
+    "puppeteer": "^2.1.1"
+  }
+}

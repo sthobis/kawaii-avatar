@@ -1,17 +1,17 @@
-const cors = require("micro-cors")()
-const { getHtml } = require("./utils/template")
-const { getScreenshot } = require("./utils/chromium")
-const { parseQuery } = require("./utils/parser")
-const { writeTempFile, pathToFileURL } = require("./utils/file")
+import Cors from "micro-cors"
+import { getHtml } from "../../src/utils/template"
+import { getScreenshot } from "../../src/utils/chromium"
+import { parseQuery } from "../../src/utils/parser"
+import { writeTempFile, pathToFileURL } from "../../src/utils/file"
 
-const isHtmlDebug = process.env.HTML_DEBUG === "1"
+const cors = Cors()
 
 module.exports = cors(async (req, res) => {
   try {
     const options = parseQuery(req)
 
     const html = getHtml(options)
-    if (isHtmlDebug) {
+    if (process.env.HTML_DEBUG === "1") {
       res.statusCode = 200
       res.setHeader('Content-Type', 'text/html')
       res.end(html)

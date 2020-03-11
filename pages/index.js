@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import Head from "next/head"
 import copy from "copy-text-to-clipboard"
-import defaultOptions from "../../options.json"
+import defaultOptions from "../src/options.json"
 
 const useInput = ({
   id,
@@ -31,7 +31,7 @@ const useInput = ({
   return { id, value, onChange, placeholder, tag }
 }
 
-const Page = ({ origin }) => {
+const Page = () => {
   const [validationMessage, setValidationMessage] = useState({})
 
   const username = useInput({
@@ -133,7 +133,7 @@ const Page = ({ origin }) => {
         return `${key}=${value}`
       })
       .join("&")
-    return `${origin}/avatar${searchParams ? "?" + searchParams : ""}`
+    return `/api/avatar${searchParams ? "?" + searchParams : ""}`
   }
 
   const imageSrc = getImageSrc()
@@ -152,7 +152,7 @@ const Page = ({ origin }) => {
   const [copyText, setCopyText] = useState(initialCopyText)
   const copyTimeoutRef = useRef(null)
   const onCopy = e => {
-    copy(imageSrc)
+    copy("https://react-kawaii.now.sh" + imageSrc)
     setCopyText("copied!")
     if (copyTimeoutRef.current) {
       window.clearTimeout(copyTimeoutRef.current)
@@ -200,7 +200,7 @@ const Page = ({ origin }) => {
           <img src={debouncedImageSrc} alt={`kawaii avatar for ${username.value}`} />
           <h2>Image Link</h2>
           <code onClick={onCopy}>
-            {imageSrc}
+            https://react-kawaii.now.sh{imageSrc}
             <span className="copy">{copyText}</span>
           </code>
         </div>
@@ -445,14 +445,6 @@ const Page = ({ origin }) => {
       `}</style>
     </div>
   )
-}
-
-Page.getInitialProps = ({ req  }) => {
-  const isDev = process.env.NOW_REGION === "dev1"
-  const protocol = isDev ? "http" : "https"
-  const host = isDev ? "localhost:3001" : req.headers.host
-
-  return { origin: `${protocol}://${host}` }
 }
 
 export default Page
