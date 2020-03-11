@@ -152,7 +152,7 @@ const Page = () => {
   const [copyText, setCopyText] = useState(initialCopyText)
   const copyTimeoutRef = useRef(null)
   const onCopy = e => {
-    copy("https://react-kawaii.now.sh" + imageSrc)
+    copy("https://kawaii-avatar.now.sh" + imageSrc)
     setCopyText("copied!")
     if (copyTimeoutRef.current) {
       window.clearTimeout(copyTimeoutRef.current)
@@ -200,7 +200,7 @@ const Page = () => {
           <img src={debouncedImageSrc} alt={`kawaii avatar for ${username.value}`} />
           <h2>Image Link</h2>
           <code onClick={onCopy}>
-            https://react-kawaii.now.sh{imageSrc}
+            https://kawaii-avatar.now.sh{imageSrc}
             <span className="copy">{copyText}</span>
           </code>
         </div>
